@@ -1,0 +1,96 @@
+Rapport du Projet de Programmation RE216 Tcom 2a
+Joumana BENGUENNA
+
+
+Dans ce projet RE216, j'ai décidé de coder d'une manière qui allait me faciliter la compréhension de mon programme. Même si il n'aura pas été mené à bout,
+je vais tenter de vous expliquer comment j'ai mis en place les requêtes afin de communiquer entre plusieurs clients.
+
+
+
+Table des matières:
+  - Travail effectué 
+  - Explication du code
+  - Difficultés rencontrées
+  
+  
+  
+  I- TRAVAIL EFFECTÉ
+
+Jalon 1: 
+Mon programme permet la connexion de plusieurs clients avec le serveur. Chaque client envoie une chaine de caractère que le serveur reçoit. les argument 
+contenant le port et l'adresse pour le client et seulement le port pour le serveur sont bien pris en compte par leur présence dans argv[].
+Une chaine listée collecte toutes les données nécessaire qui sont le port, l'adresse IP et le descripteur de fichiers récupéré lors du accept(). 
+
+Un client peut arreter la connexion grâce à la commande /quit cependant, ma liste chainée ne reinitialise pas le maillon du client sortant.
+
+
+Jalon 2:
+Dans ce nouveau jalon, ce n'est plus qu'un message qui est envoyé mais une structure qui lui est associé.
+Les clients peuvent maintenant entrer un pseudo, le changer mais aussi demander la liste des clients connectés. Ils peuvent se renseigner 
+à propos d'un client à l'aide de la commande /whois afin de savoir l'heure, la date, le port et l'adresse utilisés pour se connecter. 
+De plus, il est possible pour un client d'envoyer un message à tous les utilisateurs mais aussi à l'un en particulier.
+La liste chainée du jalon 1 est reprise afin d'y rajouter le pseudo et l'heure/date. 
+Si aucune commande n'est demandé, le message est envoyé en echo_send
+
+Mon programme a quelques manquements: le server n'indique pas au client si un pseudo est déjà pris et ne vérifie pas si un client auquel nous voulons 
+envoyer un message en UNICAST existe ou non.
+
+Jalon 3:
+Des salons peuvent dorénavans être crées. On peut afficher la liste des salons ouverts (cette commande a quelques défauts) et en rejoindre un. Les autres
+utilisateurs étant dans un salon ont une notification lorsqu'un user rejoint ou quitte le salon (command avec quelques défauts). L'utilisateur peut quitter 
+le salon dans lequel il est.
+
+
+  II- Explication du code
+  
+      Mon implémentation du code est un peu près la même pour le client et le serveur. 
+
+      Le code serveur contient deux fonctions supplémentaire: tout d'abord , connexion_multiclient() qui manipule les sockets et la liste chainée. 
+Deux grandes parties sont distinctes dans cette fonction: lorsque la socket d'écoute est active, celle-ci traite des demandes de connexions. Ainsi que
+la deuxième partie qui manipule les sockets de dialogue (une pour chaque client). Cette deuxième partie renvoie enfaite à la fonction echo_server qui
+s'occupe de traiter toutes les receptions et tous les envois entre clients et serveur. Cette fonction traite des différentes commandes mais s'assure aussi 
+que les pseudos et nom de salons envoyées par le client sont accpetable ou non (espace, taille, caractères spéciaux).
+
+La deuxième fonction rajoutée par mes soins est reinitialisation_case() permet de reinitialiser la case (abritant une socket de dialogue) du tableau 
+poll lorsqu'un client se déconnecte.
+
+Enfin, le code serveur contient deux typedef structures, l'une pour les clients et l'autre pour les salons.
+
+
+
+      Le code coté client ne contient que les fonctions main, handle_connect() et echo_client. Tout est traité dans le echo_client qui s'occupe des 
+commandes mais aussi de la fonction poll() qui a été necessaire pour les commande UNICAST et BROADCAST. Lorsque la première socket est active, l'echo_
+client traite des envois du client vers le serveur. La deuxième case du tableau poll s'assure des réceptions.
+
+  Une particularité du code client est la définition d'une variable globale au début pour stocker durablement le pseudo d'un client.
+  
+  
+
+  III- DIFFICULTÉS RENCONTRÉES
+  
+Lors de ce projet, beaucoup d'obstacles m'ont fait perdre du temps. Tout d'abord la connexion multi-client dans le jalon 1 m'a pris un peu de temps à 
+comprendre et à mettre en place mais c'est surtout l'implémentation de la liste chainée qui m'a fait prendre du retard. Je ne comprenais pas le principe 
+mais aussi la logique derrière le pointeur vers la structure suivante.
+
+Dans le jalon 2, j'avais utilisé un char* pseudo dans la structure de la liste chainée ce qui m'a fait perdre beaucoup de temps car en effet, celui-ci
+n'était pas stocké durablement ce qui m'empechait de faire n'importe quelle autre requête. C'est un erreur que je n'ai pas vu tout de suite car les 
+compilations étaient bonnes. Après avoir reglé ce problème, la chose qui m'a le plus retardé a été lorsque j'ai compilé et exécuté mon programme sur 
+une machine de l'ENSEIRB après avoir codé tout le projet sur mac et VScode. Un core dumped (abandon) aparaissait lorsque je voulais connecter un deuxième 
+client. J'ai essayé d'utiliser valgrind et gdb mais je n'ai pas su lire les messages d'erreurs. Après l'aide d'un professeur que j'ai demandé un peu trop
+tard, mon programme s'executait bien à l'ENSEIRB mais je n'avais plus assez de temps pourn le jalon 3 que j'ai quans même débuté afin de faire mon maximum.
+Le core dumped était due à la fonction ctime que j'utilise pour récuperer l'heure de connexion. De plus, j'ai mal alloué en mémoire le champs char time[]
+dans la structure client. 
+
+La mauvaise gestion de temps et certaines lacunes en C, expliquent la fin de ce projet.
+
+
+
+
+
+
+
+
+
+
+
+
